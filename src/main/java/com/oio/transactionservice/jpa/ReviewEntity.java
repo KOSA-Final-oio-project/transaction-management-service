@@ -15,7 +15,6 @@ import java.util.Date;
         allocationSize = 1
 )
 public class ReviewEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_GENERATOR")
     private Long reviewNo;
@@ -28,10 +27,10 @@ public class ReviewEntity {
     private Long heart;
 
     @Column(nullable = false)
-    private String writerId;
+    private String writerNickname;
 
     @Column(nullable = false)
-    private String receiverId;
+    private String receiverNickname;
 
     @ColumnDefault(value = "SYSDATE")
     @Column(nullable = false)
@@ -40,5 +39,4 @@ public class ReviewEntity {
     @ManyToOne
     @JoinColumn(name = "rentedProductNo", nullable = false)
     private RentedProductEntity rentedProductEntity;
-
 }
