@@ -25,7 +25,7 @@ public class RentedProductServiceImpl implements RentedProductService {
 
     }
 
-    //렌트 시작
+    //대여 시작
     @Override
     public RentedProductDto startRent(RentedProductDto rentedProductDto) {
         mapper.getConfiguration()
@@ -46,7 +46,7 @@ public class RentedProductServiceImpl implements RentedProductService {
 
     }
 
-    //렌트 종료
+    //대여 종료
     @Override
     public RentedProductDto endRent(Long rentedProductNo) {
         mapper.getConfiguration()
@@ -55,15 +55,32 @@ public class RentedProductServiceImpl implements RentedProductService {
                 .setFieldMatchingEnabled(true);
 
         RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(rentedProductNo);
-
         rentedProductEntity.updateStatus(Status.대여완료);
-
         rentedProductRepository.save(rentedProductEntity);
 
         RentedProductDto rentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
 
         return rentedProductDto;
 
+    }
+
+    //대여 물품 삭제(상태값 대여종료로 바뀜)
+    @Override
+    public RentedProductDto deleteRent(Long rentedProductNo) {
+        mapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.STANDARD)
+                .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE)
+                .setFieldMatchingEnabled(true);
+
+        RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(rentedProductNo);
+
+        rentedProductEntity.updateStatus(Status.대여종료);
+
+        rentedProductRepository.save(rentedProductEntity);
+
+        RentedProductDto rentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
+
+        return rentedProductDto;
     }
 
     @Override

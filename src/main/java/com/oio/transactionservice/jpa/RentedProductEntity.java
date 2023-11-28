@@ -48,7 +48,15 @@ public class RentedProductEntity {
     @OneToMany(mappedBy = "rentedProductEntity")
     private List<ReviewEntity> reviews;
 
+    public void setRentedProductNo(Long rentedProductNo) {
+        this.rentedProductNo = rentedProductNo;
+    }
+
     public void updateStatus(Status status) {
         this.status = status;
+    }
+
+    public void updateReviewStatus(ReviewStatus reviewStatus) {
+        this.reviewStatus = reviewStatus;
     }
 }

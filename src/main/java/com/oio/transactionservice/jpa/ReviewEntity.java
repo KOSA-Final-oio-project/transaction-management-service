@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Entity
@@ -22,8 +22,6 @@ public class ReviewEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    @ColumnDefault("0")
     private Long heart;
 
     @Column(nullable = false)
@@ -34,9 +32,14 @@ public class ReviewEntity {
 
     @ColumnDefault(value = "SYSDATE")
     @Column(nullable = false)
-    private Date postDate;
+    private LocalDateTime postDate;
 
     @ManyToOne
     @JoinColumn(name = "rentedProductNo", nullable = false)
     private RentedProductEntity rentedProductEntity;
+
+    public void setRentedProductNo(RentedProductEntity rentedProductEntity) {
+        this.rentedProductEntity = rentedProductEntity;
+    }
+
 }

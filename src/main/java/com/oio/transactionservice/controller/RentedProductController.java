@@ -20,7 +20,7 @@ public class RentedProductController {
         this.rentedProductService = rentedProductService;
     }
 
-    //렌트 시작
+    //대여 시작
     @PostMapping("/{productNo}/start")
     public ResponseEntity<ResponseRentedProduct> startRent(@PathVariable("productNo") Long productNo, @RequestBody RequestRentedProduct requestRentedProduct) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
@@ -34,12 +34,24 @@ public class RentedProductController {
         return ResponseEntity.status(HttpStatus.OK).body(responseRentedProduct);
     }
 
-    //렌트 종료
+    //대여 종료
     @PutMapping("/{rentedProductNo}/end")
     public ResponseEntity<ResponseRentedProduct> endRent(@PathVariable("rentedProductNo") Long rentedProductNo) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
         RentedProductDto rentedProductDto = rentedProductService.endRent(rentedProductNo);
+
+        ResponseRentedProduct responseRentedProduct = mapper.map(rentedProductDto, ResponseRentedProduct.class);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseRentedProduct);
+    }
+
+    //대여 물품 삭제(상태값 대여종료로 바뀜)
+    @PutMapping("/{rentedProductNo}/delete")
+    public ResponseEntity<ResponseRentedProduct> deleteRent(@PathVariable("rentedProductNo") Long rentedProductNo) {
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+        RentedProductDto rentedProductDto = rentedProductService.deleteRent(rentedProductNo);
 
         ResponseRentedProduct responseRentedProduct = mapper.map(rentedProductDto, ResponseRentedProduct.class);
 
