@@ -1,7 +1,10 @@
 package com.oio.transactionservice.jpa;
 
+import com.oio.transactionservice.jpa.status.ReviewStatus;
+import com.oio.transactionservice.jpa.status.Status;
 import lombok.Getter;
 import org.hibernate.annotations.ColumnDefault;
+import org.modelmapper.internal.bytebuddy.implementation.bind.annotation.Default;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -22,6 +25,8 @@ public class ReviewEntity {
     @Column(nullable = false)
     private String content;
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
     private Long heart;
 
     @Column(nullable = false)
@@ -29,6 +34,10 @@ public class ReviewEntity {
 
     @Column(nullable = false)
     private String receiverNickname;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ReviewStatus reviewWriter;
 
     @ColumnDefault(value = "SYSDATE")
     @Column(nullable = false)
@@ -38,8 +47,16 @@ public class ReviewEntity {
     @JoinColumn(name = "rentedProductNo", nullable = false)
     private RentedProductEntity rentedProductEntity;
 
-    public void setRentedProductNo(RentedProductEntity rentedProductEntity) {
+    public void setRentedProductEntity(RentedProductEntity rentedProductEntity) {
         this.rentedProductEntity = rentedProductEntity;
+    }
+
+    public void setReviewWriter(ReviewStatus reviewWriter) {
+        this.reviewWriter = reviewWriter;
+    }
+
+    public void setHeart(Long heart) {
+        this.heart = heart;
     }
 
 }

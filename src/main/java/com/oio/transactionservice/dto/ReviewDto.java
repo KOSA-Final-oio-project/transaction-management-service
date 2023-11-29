@@ -1,16 +1,12 @@
 package com.oio.transactionservice.dto;
 
-import com.oio.transactionservice.jpa.RentedProductEntity;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
 public class ReviewDto {
-
     private Long rentedProductNo;
-
-    private Long productNo;
 
     private String writerNickname;
 
@@ -21,4 +17,5 @@ public class ReviewDto {
     private Long heart;
 
     private LocalDateTime postDate;
+
 }
