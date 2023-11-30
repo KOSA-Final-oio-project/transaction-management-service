@@ -1,11 +1,12 @@
 package com.oio.transactionservice.jpa;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.oio.transactionservice.jpa.status.ReviewStatus;
 import com.oio.transactionservice.jpa.status.Status;
-import lombok.Getter;
+import lombok.*;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -17,7 +18,6 @@ import java.util.List;
         allocationSize = 1
 )
 public class RentedProductEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_GENERATOR")
     private Long rentedProductNo;
@@ -26,16 +26,18 @@ public class RentedProductEntity {
     private Long productNo;
 
     @Column(nullable = false)
-    private Date rentStartDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+    private LocalDateTime rentStartDate;
 
     @Column(nullable = false)
-    private Date rentEndDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+    private LocalDateTime rentEndDate;
 
     @Column(nullable = false)
-    private String ownerId;
+    private String ownerNickname;
 
     @Column(nullable = false)
-    private String borrowerId;
+    private String borrowerNickname;
 
     @Enumerated(EnumType.STRING)
     private Status status;
@@ -46,4 +48,15 @@ public class RentedProductEntity {
     @OneToMany(mappedBy = "rentedProductEntity")
     private List<ReviewEntity> reviews;
 
+    public void setRentedProductNo(Long rentedProductNo) {
+        this.rentedProductNo = rentedProductNo;
+    }
+
+    public void updateStatus(Status status) {
+        this.status = status;
+    }
+
+    public void updateReviewStatus(ReviewStatus reviewStatus) {
+        this.reviewStatus = reviewStatus;
+    }
 }

@@ -1,10 +1,13 @@
 package com.oio.transactionservice.jpa;
 
+import com.oio.transactionservice.jpa.status.ReviewStatus;
+import com.oio.transactionservice.jpa.status.Status;
 import lombok.Getter;
 import org.hibernate.annotations.ColumnDefault;
+import org.modelmapper.internal.bytebuddy.implementation.bind.annotation.Default;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Entity
@@ -15,7 +18,6 @@ import java.util.Date;
         allocationSize = 1
 )
 public class ReviewEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_GENERATOR")
     private Long reviewNo;
@@ -28,17 +30,33 @@ public class ReviewEntity {
     private Long heart;
 
     @Column(nullable = false)
-    private String writerId;
+    private String writerNickname;
 
     @Column(nullable = false)
-    private String receiverId;
+    private String receiverNickname;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ReviewStatus reviewWriter;
 
     @ColumnDefault(value = "SYSDATE")
     @Column(nullable = false)
-    private Date postDate;
+    private LocalDateTime postDate;
 
     @ManyToOne
     @JoinColumn(name = "rentedProductNo", nullable = false)
     private RentedProductEntity rentedProductEntity;
+
+    public void setRentedProductEntity(RentedProductEntity rentedProductEntity) {
+        this.rentedProductEntity = rentedProductEntity;
+    }
+
+    public void setReviewWriter(ReviewStatus reviewWriter) {
+        this.reviewWriter = reviewWriter;
+    }
+
+    public void setHeart(Long heart) {
+        this.heart = heart;
+    }
 
 }
