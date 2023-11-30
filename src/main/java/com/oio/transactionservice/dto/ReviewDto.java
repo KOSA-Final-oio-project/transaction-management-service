@@ -1,5 +1,6 @@
 package com.oio.transactionservice.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,8 +15,7 @@ public class ReviewDto {
 
     private String content;
 
-    private Long heart;
-
+    @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm", timezone="Asia/Seoul")
     private LocalDateTime postDate;
 
 }

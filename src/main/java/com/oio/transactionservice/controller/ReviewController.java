@@ -1,17 +1,16 @@
 package com.oio.transactionservice.controller;
 
 import com.oio.transactionservice.dto.ReviewDto;
-import com.oio.transactionservice.jpa.ReviewEntity;
 import com.oio.transactionservice.service.ReviewService;
 import com.oio.transactionservice.vo.RequestReview;
 import com.oio.transactionservice.vo.ResponseReview;
-import feign.Response;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.module.FindException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,61 +24,60 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
-    //물건 주인에 대한 후기 작성
-    @PostMapping("/{rentedProductNo}/{productNo}/ownerreview")
-    public ResponseEntity<ResponseReview> createRentalerReview(@PathVariable("rentedProductNo") Long rentedProductNo, @PathVariable("productNo") Long productNo, @RequestBody RequestReview requestReview) {
+    //리뷰 작성
+    @PostMapping("/{rentedProductNo}/{productNo}/review")
+    public ResponseEntity<ResponseReview> createReview(@PathVariable("rentedProductNo") Long rentedProductNo, @PathVariable("productNo") Long productNo, @RequestBody RequestReview requestReview) {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
         requestReview.setRentedProductNo(rentedProductNo);
         requestReview.setProductNo(productNo);
 
-        ReviewDto reviewDto = reviewService.createToOwnerReview(mapper.map(requestReview, ReviewDto.class));
+        ReviewDto reviewDto = reviewService.createReview(mapper.map(requestReview, ReviewDto.class));
 
         ResponseReview responseReview = mapper.map(reviewDto, ResponseReview.class);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseReview);
     }
 
-    //물건 빌린 사람에 대한 후기 작성
-    @PostMapping("/{rentedProductNo}/{productNo}/borrowerreview")
-    public ResponseEntity<ResponseReview> createBorrowerReview(@PathVariable("rentedProductNo") Long rentedProductNo, @PathVariable("productNo") Long productNo, @RequestBody RequestReview requestReview) {
-        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-
-        requestReview.setRentedProductNo(rentedProductNo);
-        requestReview.setProductNo(productNo);
-
-        ReviewDto reviewDto = reviewService.createToBorrowerReview(mapper.map(requestReview, ReviewDto.class));
-
-        ResponseReview responseReview = mapper.map(reviewDto, ResponseReview.class);
-
-        return ResponseEntity.status(HttpStatus.OK).body(responseReview);
-    }
-
-    //리뷰 삭제(상태값만 바뀜)
+    //리뷰 삭제
     @DeleteMapping("/{reviewNo}")
-    public ResponseEntity<ResponseReview> deleteReview(@PathVariable("reviewNo") Long reviewNo) {
-    reviewService.deleteReview(reviewNo);
-    return null;
+    public void deleteReview(@PathVariable("reviewNo") Long reviewNo) {
+        reviewService.deleteReview(reviewNo);
     }
 
-    //해당 상품 번호로 리뷰 전체 조회
+    //상품 번호로 해당 상품 리뷰 전체 조회
     @GetMapping("/reviews/{productNo}")
     public ResponseEntity<List<ResponseReview>> getReview(@PathVariable("productNo") Long productNo) {
-        List<ReviewEntity> reviewList = reviewService.getReview(productNo);
-        List<ResponseReview> result = new ArrayList<>();
+        List<ReviewDto> reviewDto = reviewService.getReview(productNo);
+        List<ResponseReview> responseReview = new ArrayList<>();
 
-        reviewList.forEach(v -> {
-            result.add(mapper.map(v, ResponseReview.class));
-        });
+        for (ReviewDto dto : reviewDto) {
+            ResponseReview review = mapper.map(dto, ResponseReview.class);
+            responseReview.add(review);
+        }
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(responseReview);
     }
 
+    //리뷰 번호로 리뷰 상세 조회
     @GetMapping("/review/{reviewNo}")
     public ResponseEntity<ResponseReview> getReviewDetail(@PathVariable("reviewNo") Long reviewNo) {
-        ReviewEntity reviewEntity = reviewService.getReviewDetail(reviewNo);
-        ResponseReview responseReview = mapper.map(reviewEntity, ResponseReview.class);
+        ReviewDto reviewDto = reviewService.getReviewDetail(reviewNo);
+        ResponseReview responseReview = mapper.map(reviewDto, ResponseReview.class);
 
+        return ResponseEntity.status(HttpStatus.OK).body(responseReview);
+    }
+
+    //
+    @GetMapping("/{status}/reviews")
+    public ResponseEntity<List<ResponseReview>> getMyReview(@RequestParam String nickname, @PathVariable Long status) throws FindException {
+        List<ReviewDto> reviewDto = reviewService.getWriteReview(nickname, status);
+        List<ResponseReview> responseReview = new ArrayList<>();
+
+        for (ReviewDto dto : reviewDto) {
+            ResponseReview review = mapper.map(dto, ResponseReview.class);
+            responseReview.add(review);
+        }
         return ResponseEntity.status(HttpStatus.OK).body(responseReview);
     }
 

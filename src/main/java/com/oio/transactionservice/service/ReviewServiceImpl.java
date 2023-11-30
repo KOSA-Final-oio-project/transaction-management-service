@@ -13,6 +13,8 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.module.FindException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,68 +32,65 @@ public class ReviewServiceImpl implements ReviewService {
         this.rentedProductRepository = rentedProductRepository;
     }
 
-    //물건 주인에 대한 후기 작성
-    @Override
-    public ReviewDto createToOwnerReview(ReviewDto reviewDto) {
+    void mapper() {
         mapper.getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.STRICT)
                 .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE)
                 .setFieldMatchingEnabled(true);
+    }
 
-        //RENTED_PRODUCT.REVIEW_STATUS만 조작
+    //리뷰 작성
+    @Override
+    public ReviewDto createReview(ReviewDto reviewDto) {
+        mapper();
+
         RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(reviewDto.getRentedProductNo());
-        if (rentedProductEntity.getReviewStatus() == ReviewStatus.없음) {
-            rentedProductEntity.updateReviewStatus(ReviewStatus.대여받은사람);
-        } else {
-            rentedProductEntity.updateReviewStatus(ReviewStatus.모두);
+
+        ReviewEntity reviewEntity = mapper.map(reviewDto, ReviewEntity.class);
+
+        String owner = rentedProductEntity.getOwnerNickname();
+        String writer = reviewEntity.getWriterNickname();
+
+        //RENTED_PRODUCT.REVIEW_STATUS 값만 변경
+        switch (rentedProductEntity.getReviewStatus()) {
+            case 없음:
+                if (writer.equals(owner)) {
+                    rentedProductEntity.updateReviewStatus(ReviewStatus.대여해준사람);
+                } else {
+                    rentedProductEntity.updateReviewStatus(ReviewStatus.대여받은사람);
+                }
+                break;
+
+            case 대여해준사람:
+                rentedProductEntity.updateReviewStatus(ReviewStatus.모두);
+                break;
+
+            case 대여받은사람:
+                rentedProductEntity.updateReviewStatus(ReviewStatus.모두);
+                break;
         }
         rentedProductRepository.save(rentedProductEntity);
 
         //REVIEW 생성
-        ReviewEntity reviewEntity = mapper.map(reviewDto, ReviewEntity.class);
-        reviewEntity.setReviewWriter(ReviewStatus.대여받은사람);
+        if (rentedProductEntity.getReviewStatus() == ReviewStatus.대여해준사람) {
+            reviewEntity.setReviewWriter(ReviewStatus.대여해준사람);
+        } else {
+            reviewEntity.setReviewWriter(ReviewStatus.대여받은사람);
+        }
+
         reviewEntity.setRentedProductEntity(rentedProductEntity);
         reviewEntity.setHeart(0L);
         reviewRepository.save(reviewEntity);
 
-        ReviewDto retunreReviewDto = mapper.map(reviewEntity, ReviewDto.class);
-        retunreReviewDto.setRentedProductNo(reviewEntity.getRentedProductEntity().getRentedProductNo());
+        ReviewDto returnReviewDto = mapper.map(reviewEntity, ReviewDto.class);
+        returnReviewDto.setRentedProductNo(reviewEntity.getRentedProductEntity().getRentedProductNo());
 
-        return retunreReviewDto;
+        return returnReviewDto;
     }
 
-    //물건 대여한 사람에 대한 후기 작성
+    //리뷰 삭제
     @Override
-    public ReviewDto createToBorrowerReview(ReviewDto reviewDto) {
-        mapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STRICT)
-                .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE)
-                .setFieldMatchingEnabled(true);
-
-        //RENTED_PRODUCT.REVIEW_STATUS만 조작
-        RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(reviewDto.getRentedProductNo());
-        if (rentedProductEntity.getReviewStatus() == ReviewStatus.없음) {
-            rentedProductEntity.updateReviewStatus(ReviewStatus.대여해준사람);
-        } else {
-            rentedProductEntity.updateReviewStatus(ReviewStatus.모두);
-        }
-        rentedProductRepository.save(rentedProductEntity);
-
-        //REVIEW 생성
-        ReviewEntity reviewEntity = mapper.map(reviewDto, ReviewEntity.class);
-        reviewEntity.setReviewWriter(ReviewStatus.대여해준사람);
-        reviewEntity.setRentedProductEntity(rentedProductEntity);
-        reviewRepository.save(reviewEntity);
-
-        ReviewDto retunreReviewDto = mapper.map(reviewEntity, ReviewDto.class);
-        retunreReviewDto.setRentedProductNo(reviewEntity.getRentedProductEntity().getRentedProductNo());
-
-        return retunreReviewDto;
-    }
-
-    //리뷰 삭제(상태값만 바뀜)
-    @Override
-    public ReviewDto deleteReview(Long reviewNo) {
+    public void deleteReview(Long reviewNo) {
         ReviewEntity reviewEntity = reviewRepository.findByReviewNo(reviewNo);
 
         ReviewStatus reviewStatus = reviewEntity.getRentedProductEntity().getReviewStatus();
@@ -104,7 +103,6 @@ public class ReviewServiceImpl implements ReviewService {
                 } else {
                     reviewStatus = ReviewStatus.대여해준사람;
                 }
-                reviewEntity.getRentedProductEntity().updateReviewStatus(reviewStatus);
                 break;
 
             case 대여받은사람:
@@ -117,19 +115,73 @@ public class ReviewServiceImpl implements ReviewService {
         }
         reviewEntity.getRentedProductEntity().updateReviewStatus(reviewStatus);
         reviewRepository.delete(reviewEntity);
-        return null;
     }
 
-    //해당 상품 번호로 리뷰 전체 조회
+    //상품 번호로 해당 상품 리뷰 전체 조회
     @Override
-    public List<ReviewEntity> getReview(Long productNo) {
-        return reviewRepository.findReviewEntitiesByRentedProductEntityProductNo(productNo);
+    public List<ReviewDto> getReview(Long productNo) {
+        mapper();
+
+        List<ReviewEntity> reviewEntity = reviewRepository.findReviewEntitiesByRentedProductEntityProductNo(productNo);
+
+        List<ReviewDto> returnReviewDto = new ArrayList<>();
+
+        for (ReviewEntity entity : reviewEntity) {
+            ReviewDto dto = mapper.map(entity, ReviewDto.class);
+            returnReviewDto.add(dto);
+        }
+        return returnReviewDto;
     }
 
-    //리뷰 상세 조회
+    //리뷰 번호로 리뷰 상세 조회
     @Override
-    public ReviewEntity getReviewDetail(Long reviewNo) {
-        return reviewRepository.findByReviewNo(reviewNo);
+    public ReviewDto getReviewDetail(Long reviewNo) {
+        mapper();
+
+        ReviewEntity reviewEntity = reviewRepository.findByReviewNo(reviewNo);
+
+        ReviewDto returnReviewDto = mapper.map(reviewEntity, ReviewDto.class);
+
+        return returnReviewDto;
+    }
+
+    //작성한 리뷰 목록
+    @Override
+    public List<ReviewDto> getWriteReview(String nickname, Long status) throws FindException {
+        mapper();
+
+        List<ReviewEntity> reviewEntity;
+
+        if (status == 0) {
+         reviewEntity = reviewRepository.findReviewEntitiesByWriterNickname(nickname);
+        } else if (status == 1) {
+            reviewEntity = reviewRepository.findReviewEntitiesByReceiverNickname(nickname);
+        } else {
+            throw new FindException("예외발생");
+        }
+
+        List<ReviewDto> returnReviewDto = new ArrayList<>();
+
+        for (ReviewEntity entity : reviewEntity) {
+            ReviewDto dto = mapper.map(entity, ReviewDto.class);
+            returnReviewDto.add(dto);
+        }
+        return returnReviewDto;
+    }
+
+    //받은 리뷰 목록
+    public List<ReviewDto> getReceiveReview(String nickname) {
+        mapper();
+
+        List<ReviewEntity> reviewEntity = reviewRepository.findReviewEntitiesByReceiverNickname(nickname);
+
+        List<ReviewDto> returnReviewDto = new ArrayList<>();
+
+        for (ReviewEntity entity : reviewEntity) {
+            ReviewDto dto = mapper.map(entity, ReviewDto.class);
+            returnReviewDto.add(dto);
+        }
+        return returnReviewDto;
     }
 
     @Override
