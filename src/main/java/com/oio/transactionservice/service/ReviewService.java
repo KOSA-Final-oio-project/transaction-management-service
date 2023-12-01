@@ -13,13 +13,14 @@ public interface ReviewService {
     void deleteReview(Long reviewNo);
 
     //상품 번호로 해당 상품 리뷰 전체 조회
-    List<ReviewDto> getReview(Long rentedProductNo);
+    List<ReviewDto> getProductReview(Long rentedProductNo);
 
     //리뷰 번호로 리뷰 상세 조회
     ReviewDto getReviewDetail(Long reviewNo);
 
-    List<ReviewDto> getWriteReview(String nickname, Long status) throws FindException;
+    //사용자 리뷰 조회(status: 0 = 작성한 리뷰, 1 = 받은 리뷰)
+    List<ReviewDto> getMyReview(String nickname, Long status) throws FindException;
 
     //리뷰 좋아요
-    ReviewDto createReviewHeart();
+    void updateHeart(Long reviewNo);
 }

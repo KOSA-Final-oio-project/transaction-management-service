@@ -18,4 +18,6 @@ public class ReviewDto {
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm", timezone="Asia/Seoul")
     private LocalDateTime postDate;
 
+    private Long heart;
+
 }

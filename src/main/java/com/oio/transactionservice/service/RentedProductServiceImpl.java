@@ -1,16 +1,13 @@
 package com.oio.transactionservice.service;
 
+import com.oio.transactionservice.config.ModelMapperConfig;
 import com.oio.transactionservice.dto.RentedProductDto;
-import com.oio.transactionservice.dto.ReviewDto;
 import com.oio.transactionservice.jpa.RentedProductEntity;
 import com.oio.transactionservice.jpa.RentedProductRepository;
-import com.oio.transactionservice.jpa.ReviewEntity;
 import com.oio.transactionservice.jpa.status.ReviewStatus;
 import com.oio.transactionservice.jpa.status.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.config.Configuration;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,22 +20,17 @@ import java.util.List;
 public class RentedProductServiceImpl implements RentedProductService {
     RentedProductRepository rentedProductRepository;
 
-    ModelMapper mapper = new ModelMapper();
+    private ModelMapper mapper;
 
     @Autowired
     public RentedProductServiceImpl(RentedProductRepository rentedProductRepository) {
         this.rentedProductRepository = rentedProductRepository;
-
+        this.mapper = ModelMapperConfig.modelMapper();
     }
 
     //대여 시작
     @Override
     public RentedProductDto startRent(RentedProductDto rentedProductDto) {
-        mapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STANDARD)
-                .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE)
-                .setFieldMatchingEnabled(true);
-
         rentedProductDto.setReviewStatus(ReviewStatus.없음);
         rentedProductDto.setStatus(Status.대여중);
 
@@ -51,49 +43,19 @@ public class RentedProductServiceImpl implements RentedProductService {
         return returnRentedProductDto;
     }
 
-    //대여 종료
+    //대여 완료
     @Override
-    public RentedProductDto endRent(Long rentedProductNo) {
-        mapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STANDARD)
-                .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE)
-                .setFieldMatchingEnabled(true);
-
+    public void updateRentStatus(Long rentedProductNo) {
         RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(rentedProductNo);
+
         rentedProductEntity.updateStatus(Status.대여완료);
-        rentedProductRepository.save(rentedProductEntity);
-
-        RentedProductDto rentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
-
-        return rentedProductDto;
-    }
-
-    //대여 물품 삭제(상태값만 대여종료로 바뀜)
-    @Override
-    public RentedProductDto deleteRent(Long rentedProductNo) {
-        mapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STANDARD)
-                .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE)
-                .setFieldMatchingEnabled(true);
-
-        RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(rentedProductNo);
-
-        rentedProductEntity.updateStatus(Status.대여종료);
 
         rentedProductRepository.save(rentedProductEntity);
-
-        RentedProductDto rentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
-
-        return rentedProductDto;
     }
 
+    //대여 관련 물품 조회(status: 0 = 빌려준, 1 = 빌린)
     @Override
     public List<RentedProductDto> getRentedProduct(String nickname, Long status) {
-        mapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STANDARD)
-                .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE)
-                .setFieldMatchingEnabled(true);
-
         List<RentedProductEntity> rentedProductEntity;
 
         if (status == 0) {
