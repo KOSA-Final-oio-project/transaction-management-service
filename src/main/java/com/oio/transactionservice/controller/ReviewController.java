@@ -10,9 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.module.FindException;
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/review")
@@ -27,7 +28,7 @@ public class ReviewController {
 
     //리뷰 작성
     @PostMapping("/{productNo}/{rentedProductNo}")
-    public ResponseEntity<ResponseReview> createReview(@PathVariable("rentedProductNo") Long rentedProductNo, @PathVariable("productNo") Long productNo, @RequestBody RequestReview requestReview) {
+    public ResponseEntity<ResponseReview> createReview(@PathVariable("rentedProductNo") Long rentedProductNo, @PathVariable("productNo") Long productNo, @Valid @RequestBody RequestReview requestReview) throws Exception {
         requestReview.setRentedProductNo(rentedProductNo);
         requestReview.setProductNo(productNo);
 
@@ -35,19 +36,20 @@ public class ReviewController {
 
         ResponseReview responseReview = mapper.map(reviewDto, ResponseReview.class);
 
-        return ResponseEntity.status(HttpStatus.OK).body(responseReview);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseReview);
     }
 
     //리뷰 삭제
     @DeleteMapping("/{reviewNo}")
-    public void deleteReview(@PathVariable("reviewNo") Long reviewNo) {
+    public void deleteReview(@PathVariable("reviewNo") Long reviewNo) throws Exception {
         reviewService.deleteReview(reviewNo);
     }
 
     //상품 번호로 해당 상품 리뷰 전체 조회
     @GetMapping("/reviews/{productNo}")
-    public ResponseEntity<List<ResponseReview>> getProductReview(@PathVariable("productNo") Long productNo) {
+    public ResponseEntity<List<ResponseReview>> getProductReview(@PathVariable("productNo") Long productNo) throws Exception {
         List<ReviewDto> reviewDto = reviewService.getProductReview(productNo);
+
         List<ResponseReview> responseReview = new ArrayList<>();
 
         for (ReviewDto dto : reviewDto) {
@@ -55,12 +57,16 @@ public class ReviewController {
             responseReview.add(review);
         }
 
+        if(responseReview.size() == 0){
+            throw new NoSuchElementException();
+        }
+
         return ResponseEntity.status(HttpStatus.OK).body(responseReview);
     }
 
     //리뷰 번호로 리뷰 상세 조회
     @GetMapping("/{reviewNo}")
-    public ResponseEntity<ResponseReview> getReviewDetail(@PathVariable("reviewNo") Long reviewNo) {
+    public ResponseEntity<ResponseReview> getReviewDetail(@PathVariable("reviewNo") Long reviewNo) throws Exception {
         ReviewDto reviewDto = reviewService.getReviewDetail(reviewNo);
         ResponseReview responseReview = mapper.map(reviewDto, ResponseReview.class);
 
@@ -69,7 +75,7 @@ public class ReviewController {
 
     //사용자 리뷰 조회(status: 0 = 작성한 리뷰, 1 = 받은 리뷰)
     @GetMapping("/myreviews/{status}")
-    public ResponseEntity<List<ResponseReview>> getMyReview(@RequestParam String nickname, @PathVariable Long status) throws FindException {
+    public ResponseEntity<List<ResponseReview>> getMyReview(@RequestParam String nickname, @PathVariable Long status) throws Exception {
         List<ReviewDto> reviewDto = reviewService.getMyReview(nickname, status);
         List<ResponseReview> responseReview = new ArrayList<>();
 
@@ -82,7 +88,7 @@ public class ReviewController {
 
     //리뷰 좋아요
     @PutMapping("/{reviewNo}")
-    public void updateHeart(@PathVariable Long reviewNo) {
+    public void updateHeart(@PathVariable Long reviewNo) throws Exception {
         reviewService.updateHeart(reviewNo);
     }
 

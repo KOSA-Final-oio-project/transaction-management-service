@@ -1,7 +1,5 @@
 package com.oio.transactionservice.jpa;
 
-import com.oio.transactionservice.jpa.status.ReviewStatus;
-import com.oio.transactionservice.jpa.status.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

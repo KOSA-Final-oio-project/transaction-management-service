@@ -1,10 +1,9 @@
 package com.oio.transactionservice.jpa;
 
 import com.oio.transactionservice.jpa.status.ReviewStatus;
-import com.oio.transactionservice.jpa.status.Status;
 import lombok.Getter;
 import org.hibernate.annotations.ColumnDefault;
-import org.modelmapper.internal.bytebuddy.implementation.bind.annotation.Default;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -39,7 +38,7 @@ public class ReviewEntity {
     @Enumerated(EnumType.STRING)
     private ReviewStatus reviewWriter;
 
-    @ColumnDefault(value = "SYSDATE")
+    @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime postDate;
 
