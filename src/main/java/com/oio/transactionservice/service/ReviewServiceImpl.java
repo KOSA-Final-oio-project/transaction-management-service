@@ -72,7 +72,6 @@ public class ReviewServiceImpl implements ReviewService {
             reviewEntity.setHeart(0L);
             reviewRepository.save(reviewEntity);
 
-
             ReviewDto returnReviewDto = mapper.map(reviewEntity, ReviewDto.class);
             returnReviewDto.setRentedProductNo(reviewEntity.getRentedProductEntity().getRentedProductNo());
 
@@ -86,7 +85,6 @@ public class ReviewServiceImpl implements ReviewService {
 
         }
     }
-
 
     //리뷰 삭제
     @Override
@@ -114,6 +112,7 @@ public class ReviewServiceImpl implements ReviewService {
                     reviewStatus = ReviewStatus.없음;
                     break;
             }
+
             reviewEntity.getRentedProductEntity().updateReviewStatus(reviewStatus);
             reviewRepository.delete(reviewEntity);
         } catch (NullPointerException nullPointerException) {
@@ -203,22 +202,22 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public void updateHeart(Long reviewNo) throws Exception {
         try {
-        ReviewEntity reviewEntity = reviewRepository.findByReviewNo(reviewNo);
+            ReviewEntity reviewEntity = reviewRepository.findByReviewNo(reviewNo);
 
-        if (reviewEntity.getHeart() == 0) {
-            reviewEntity.setHeart(1L);
-        } else {
-            reviewEntity.setHeart(0L);
-        }
+            if (reviewEntity.getHeart() == 0) {
+                reviewEntity.setHeart(1L);
+            } else {
+                reviewEntity.setHeart(0L);
+            }
 
-        reviewRepository.save(reviewEntity);
+            reviewRepository.save(reviewEntity);
         } catch (NullPointerException nullPointerException) {
             nullPointerException.printStackTrace();
             throw new NullPointerException("리뷰 좋아요 예외 발생");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("예외 발생");
         }
     }
+
 }
