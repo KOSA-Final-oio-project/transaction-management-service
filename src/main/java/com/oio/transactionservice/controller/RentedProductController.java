@@ -1,12 +1,10 @@
 package com.oio.transactionservice.controller;
 
+import com.oio.transactionservice.config.ModelMapperConfig;
 import com.oio.transactionservice.dto.RentedProductDto;
-import com.oio.transactionservice.dto.ReviewDto;
 import com.oio.transactionservice.service.RentedProductService;
 import com.oio.transactionservice.vo.RequestRentedProduct;
 import com.oio.transactionservice.vo.ResponseRentedProduct;
-import com.oio.transactionservice.vo.ResponseReview;
-import lombok.extern.java.Log;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.http.HttpStatus;
@@ -15,20 +13,22 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/rent")
 public class RentedProductController {
     private RentedProductService rentedProductService;
-    ModelMapper mapper = new ModelMapper();
+    private ModelMapper mapper;
 
     public RentedProductController(RentedProductService rentedProductService) {
         this.rentedProductService = rentedProductService;
+        this.mapper = ModelMapperConfig.modelMapper();
     }
 
     //대여 시작
-    @PostMapping("/{productNo}/start")
-    public ResponseEntity<ResponseRentedProduct> startRent(@PathVariable("productNo") Long productNo, @RequestBody RequestRentedProduct requestRentedProduct) {
+    @PostMapping("/{productNo}")
+    public ResponseEntity<ResponseRentedProduct> startRent(@PathVariable("productNo") Long productNo, @RequestBody RequestRentedProduct requestRentedProduct) throws Exception {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
         requestRentedProduct.setProductNo(productNo);
@@ -37,43 +37,31 @@ public class RentedProductController {
 
         ResponseRentedProduct responseRentedProduct = mapper.map(rentedProductDto, ResponseRentedProduct.class);
 
-        return ResponseEntity.status(HttpStatus.OK).body(responseRentedProduct);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseRentedProduct);
     }
 
-    //대여 종료
-    @PutMapping("/{rentedProductNo}/end")
-    public ResponseEntity<ResponseRentedProduct> endRent(@PathVariable("rentedProductNo") Long rentedProductNo) {
-        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-
-        RentedProductDto rentedProductDto = rentedProductService.endRent(rentedProductNo);
-
-        ResponseRentedProduct responseRentedProduct = mapper.map(rentedProductDto, ResponseRentedProduct.class);
-
-        return ResponseEntity.status(HttpStatus.OK).body(responseRentedProduct);
+    //대여 완료
+    @PutMapping("/{rentedProductNo}")
+    public void updateRentStatus(@PathVariable("rentedProductNo") Long rentedProductNo) throws Exception {
+        rentedProductService.updateRentStatus(rentedProductNo);
     }
 
-    //대여 물품 삭제(상태값 대여종료로 바뀜)
-    @PutMapping("/{rentedProductNo}/delete")
-    public ResponseEntity<ResponseRentedProduct> deleteRent(@PathVariable("rentedProductNo") Long rentedProductNo) {
-        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-
-        RentedProductDto rentedProductDto = rentedProductService.deleteRent(rentedProductNo);
-
-        ResponseRentedProduct responseRentedProduct = mapper.map(rentedProductDto, ResponseRentedProduct.class);
-
-        return ResponseEntity.status(HttpStatus.OK).body(responseRentedProduct);
-    }
-
-    //대여 관련 목록 조회
-    @GetMapping("{status}/rented")
-    public ResponseEntity<List<ResponseRentedProduct>> getRentedProduct(@RequestParam String nickname, @PathVariable Long status) {
+    //대여 관련 물품 조회(status: 0 = 빌려준, 1 = 빌린)
+    @GetMapping("/{status}")
+    public ResponseEntity<List<ResponseRentedProduct>> getRentedProduct(@RequestParam String nickname, @PathVariable Long status) throws Exception {
         List<RentedProductDto> rentedProductDto = rentedProductService.getRentedProduct(nickname, status);
+
         List<ResponseRentedProduct> responseRentedProduct = new ArrayList<>();
 
         for (RentedProductDto dto : rentedProductDto) {
             ResponseRentedProduct response = mapper.map(dto, ResponseRentedProduct.class);
             responseRentedProduct.add(response);
         }
+
+        if(responseRentedProduct.size() == 0){
+            throw new NoSuchElementException();
+        }
+
         return ResponseEntity.status(HttpStatus.OK).body(responseRentedProduct);
     }
 }

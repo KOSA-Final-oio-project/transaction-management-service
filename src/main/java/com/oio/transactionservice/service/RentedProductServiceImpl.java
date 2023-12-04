@@ -1,20 +1,17 @@
 package com.oio.transactionservice.service;
 
+import com.oio.transactionservice.config.ModelMapperConfig;
 import com.oio.transactionservice.dto.RentedProductDto;
-import com.oio.transactionservice.dto.ReviewDto;
 import com.oio.transactionservice.jpa.RentedProductEntity;
 import com.oio.transactionservice.jpa.RentedProductRepository;
-import com.oio.transactionservice.jpa.ReviewEntity;
 import com.oio.transactionservice.jpa.status.ReviewStatus;
 import com.oio.transactionservice.jpa.status.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.config.Configuration;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.lang.module.FindException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,94 +20,95 @@ import java.util.List;
 public class RentedProductServiceImpl implements RentedProductService {
     RentedProductRepository rentedProductRepository;
 
-    ModelMapper mapper = new ModelMapper();
+    private ModelMapper mapper;
 
     @Autowired
     public RentedProductServiceImpl(RentedProductRepository rentedProductRepository) {
         this.rentedProductRepository = rentedProductRepository;
-
+        this.mapper = ModelMapperConfig.modelMapper();
     }
 
     //대여 시작
     @Override
-    public RentedProductDto startRent(RentedProductDto rentedProductDto) {
-        mapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STANDARD)
-                .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE)
-                .setFieldMatchingEnabled(true);
+    public RentedProductDto startRent(RentedProductDto rentedProductDto) throws Exception {
+        try {
+            if (rentedProductDto.getRentedProductNo() != null) {
+                rentedProductDto.setReviewStatus(ReviewStatus.없음);
+                rentedProductDto.setStatus(Status.대여중);
 
-        rentedProductDto.setReviewStatus(ReviewStatus.없음);
-        rentedProductDto.setStatus(Status.대여중);
+                RentedProductEntity rentedProductEntity = mapper.map(rentedProductDto, RentedProductEntity.class);
 
-        RentedProductEntity rentedProductEntity = mapper.map(rentedProductDto, RentedProductEntity.class);
+                rentedProductRepository.save(rentedProductEntity);
 
-        rentedProductRepository.save(rentedProductEntity);
+                RentedProductDto returnRentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
 
-        RentedProductDto returnRentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
-
-        return returnRentedProductDto;
-    }
-
-    //대여 종료
-    @Override
-    public RentedProductDto endRent(Long rentedProductNo) {
-        mapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STANDARD)
-                .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE)
-                .setFieldMatchingEnabled(true);
-
-        RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(rentedProductNo);
-        rentedProductEntity.updateStatus(Status.대여완료);
-        rentedProductRepository.save(rentedProductEntity);
-
-        RentedProductDto rentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
-
-        return rentedProductDto;
-    }
-
-    //대여 물품 삭제(상태값만 대여종료로 바뀜)
-    @Override
-    public RentedProductDto deleteRent(Long rentedProductNo) {
-        mapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STANDARD)
-                .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE)
-                .setFieldMatchingEnabled(true);
-
-        RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(rentedProductNo);
-
-        rentedProductEntity.updateStatus(Status.대여종료);
-
-        rentedProductRepository.save(rentedProductEntity);
-
-        RentedProductDto rentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
-
-        return rentedProductDto;
-    }
-
-    @Override
-    public List<RentedProductDto> getRentedProduct(String nickname, Long status) {
-        mapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STANDARD)
-                .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE)
-                .setFieldMatchingEnabled(true);
-
-        List<RentedProductEntity> rentedProductEntity;
-
-        if (status == 0) {
-            rentedProductEntity = rentedProductRepository.findRentedProductEntitiesByOwnerNickname(nickname);
-        } else if (status == 1) {
-            rentedProductEntity = rentedProductRepository.findRentedProductEntitiesByBorrowerNickname(nickname);
-        } else {
-            throw new FindException("예외발생");
+                return returnRentedProductDto;
+            } else {
+                throw new NullPointerException();
+            }
+        } catch (DataIntegrityViolationException dataIntegrityViolationException) {
+            dataIntegrityViolationException.printStackTrace();
+            throw new DataIntegrityViolationException("대여 시작 SQL 예외 발생");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("예외 발생");
         }
+    }
 
-        List<RentedProductDto> returnRentedProductDto = new ArrayList<>();
+    //대여 완료
+    @Override
+    public void updateRentStatus(Long rentedProductNo) throws Exception {
+        try {
+            RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(rentedProductNo);
 
-        for (RentedProductEntity entity : rentedProductEntity) {
-            RentedProductDto dto = mapper.map(entity, RentedProductDto.class);
-            returnRentedProductDto.add(dto);
+            rentedProductEntity.updateStatus(Status.대여완료);
+
+            rentedProductRepository.save(rentedProductEntity);
+        } catch (NullPointerException nullPointerException) {
+            nullPointerException.printStackTrace();
+            throw new NullPointerException("대여 완료 예외 발생");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("예외 발생");
         }
-        return returnRentedProductDto;
+    }
+
+    //대여 관련 물품 조회(status: 0 = 빌려준, 1 = 빌린)
+    @Override
+    public List<RentedProductDto> getRentedProduct(String nickname, Long status) throws Exception {
+        try {
+            List<RentedProductEntity> rentedProductEntity;
+
+            if (status != null) {
+                if (status == 0) {
+                    rentedProductEntity = rentedProductRepository.findRentedProductEntitiesByOwnerNickname(nickname);
+                } else if (status == 1) {
+                    rentedProductEntity = rentedProductRepository.findRentedProductEntitiesByBorrowerNickname(nickname);
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            } else {
+                throw new NullPointerException();
+            }
+
+
+            List<RentedProductDto> returnRentedProductDto = new ArrayList<>();
+
+            for (RentedProductEntity entity : rentedProductEntity) {
+                RentedProductDto dto = mapper.map(entity, RentedProductDto.class);
+                returnRentedProductDto.add(dto);
+            }
+            return returnRentedProductDto;
+        } catch (IllegalArgumentException illegalArgumentException) {
+            illegalArgumentException.printStackTrace();
+            throw new IllegalArgumentException("사용자 리뷰 조회 예외 발생");
+        } catch (NullPointerException nullPointerException) {
+            nullPointerException.printStackTrace();
+            throw new NullPointerException("사용자 리뷰 조회 예외 발생");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("예외 발생");
+        }
     }
 
 }
