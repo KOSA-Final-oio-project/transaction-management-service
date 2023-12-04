@@ -2,7 +2,6 @@ package com.oio.transactionservice.service;
 
 import com.oio.transactionservice.dto.ReviewDto;
 
-import java.lang.module.FindException;
 import java.util.List;
 
 public interface ReviewService {

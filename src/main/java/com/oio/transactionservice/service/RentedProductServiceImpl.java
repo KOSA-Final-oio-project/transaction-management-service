@@ -32,16 +32,17 @@ public class RentedProductServiceImpl implements RentedProductService {
     @Override
     public RentedProductDto startRent(RentedProductDto rentedProductDto) throws Exception {
         try {
-            if (rentedProductDto.getRentedProductNo() != null) {
+            if (rentedProductDto.getProductNo() != null) {
                 rentedProductDto.setReviewStatus(ReviewStatus.없음);
                 rentedProductDto.setStatus(Status.대여중);
+                System.out.println("서비스1");
 
                 RentedProductEntity rentedProductEntity = mapper.map(rentedProductDto, RentedProductEntity.class);
-
+                System.out.println("서비스2");
                 rentedProductRepository.save(rentedProductEntity);
-
+                System.out.println("서비스3");
                 RentedProductDto returnRentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
-
+                System.out.println("서비스4");
                 return returnRentedProductDto;
             } else {
                 throw new NullPointerException();
@@ -49,7 +50,11 @@ public class RentedProductServiceImpl implements RentedProductService {
         } catch (DataIntegrityViolationException dataIntegrityViolationException) {
             dataIntegrityViolationException.printStackTrace();
             throw new DataIntegrityViolationException("대여 시작 SQL 예외 발생");
-        } catch (Exception e) {
+        } catch (NullPointerException nullPointerException) {
+            nullPointerException.printStackTrace();
+            throw new NullPointerException("대여 시작 Null 예외 발생");
+        }
+        catch (Exception e) {
             e.printStackTrace();
             throw new Exception("예외 발생");
         }
@@ -90,7 +95,6 @@ public class RentedProductServiceImpl implements RentedProductService {
             } else {
                 throw new NullPointerException();
             }
-
 
             List<RentedProductDto> returnRentedProductDto = new ArrayList<>();
 
