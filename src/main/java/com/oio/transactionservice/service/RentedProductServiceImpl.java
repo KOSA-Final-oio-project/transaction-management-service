@@ -35,14 +35,13 @@ public class RentedProductServiceImpl implements RentedProductService {
             if (rentedProductDto.getProductNo() != null) {
                 rentedProductDto.setReviewStatus(ReviewStatus.없음);
                 rentedProductDto.setStatus(Status.대여중);
-                System.out.println("서비스1");
 
                 RentedProductEntity rentedProductEntity = mapper.map(rentedProductDto, RentedProductEntity.class);
-                System.out.println("서비스2");
+
                 rentedProductRepository.save(rentedProductEntity);
-                System.out.println("서비스3");
+
                 RentedProductDto returnRentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
-                System.out.println("서비스4");
+
                 return returnRentedProductDto;
             } else {
                 throw new NullPointerException();

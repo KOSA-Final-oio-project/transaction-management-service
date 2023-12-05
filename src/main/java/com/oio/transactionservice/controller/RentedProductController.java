@@ -2,6 +2,8 @@ package com.oio.transactionservice.controller;
 
 import com.oio.transactionservice.config.ModelMapperConfig;
 import com.oio.transactionservice.dto.RentedProductDto;
+import com.oio.transactionservice.kafka.messagequeue.KafkaProducer;
+import com.oio.transactionservice.kafka.messagequeue.RentedProductProducer;
 import com.oio.transactionservice.service.RentedProductService;
 import com.oio.transactionservice.vo.RequestRentedProduct;
 import com.oio.transactionservice.vo.ResponseRentedProduct;
@@ -20,10 +22,13 @@ import java.util.NoSuchElementException;
 public class RentedProductController {
     private RentedProductService rentedProductService;
     private ModelMapper mapper;
+    private KafkaProducer kafkaProducer;
+    private RentedProductProducer rentedProductProducer;
 
-    public RentedProductController(RentedProductService rentedProductService) {
+    public RentedProductController(RentedProductService rentedProductService, RentedProductProducer rentedProductProducer) {
         this.rentedProductService = rentedProductService;
         this.mapper = ModelMapperConfig.modelMapper();
+        this.rentedProductProducer = rentedProductProducer;
     }
 
     //대여 시작
@@ -35,9 +40,15 @@ public class RentedProductController {
 
         RentedProductDto rentedProductDto = rentedProductService.startRent(mapper.map(requestRentedProduct, RentedProductDto.class));
 
-        ResponseRentedProduct responseRentedProduct = mapper.map(rentedProductDto, ResponseRentedProduct.class);
+        System.out.println(rentedProductDto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseRentedProduct);
+        rentedProductProducer.send("rentedproduct", rentedProductDto);
+
+        ResponseRentedProduct returnValue = mapper.map(rentedProductDto, ResponseRentedProduct.class);
+
+//        ResponseRentedProduct responseRentedProduct = mapper.map(rentedProductDto, ResponseRentedProduct.class);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
     }
 
     //대여 완료
