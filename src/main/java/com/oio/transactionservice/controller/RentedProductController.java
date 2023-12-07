@@ -2,8 +2,8 @@ package com.oio.transactionservice.controller;
 
 import com.oio.transactionservice.config.ModelMapperConfig;
 import com.oio.transactionservice.dto.RentedProductDto;
-import com.oio.transactionservice.kafka.messagequeue.KafkaProducer;
-import com.oio.transactionservice.kafka.messagequeue.RentedProductProducer;
+import com.oio.transactionservice.messagequeue.RentedProductProducer;
+import com.oio.transactionservice.messagequeue.ReviewProducer;
 import com.oio.transactionservice.service.RentedProductService;
 import com.oio.transactionservice.vo.RequestRentedProduct;
 import com.oio.transactionservice.vo.ResponseRentedProduct;
@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -22,13 +23,14 @@ import java.util.NoSuchElementException;
 public class RentedProductController {
     private RentedProductService rentedProductService;
     private ModelMapper mapper;
-    private KafkaProducer kafkaProducer;
     private RentedProductProducer rentedProductProducer;
+    private ReviewProducer reviewProducer;
 
-    public RentedProductController(RentedProductService rentedProductService, RentedProductProducer rentedProductProducer) {
+    public RentedProductController(RentedProductService rentedProductService, RentedProductProducer rentedProductProducer, ReviewProducer reviewProducer) {
         this.rentedProductService = rentedProductService;
         this.mapper = ModelMapperConfig.modelMapper();
         this.rentedProductProducer = rentedProductProducer;
+        this.reviewProducer = reviewProducer;
     }
 
     //대여 시작
@@ -40,15 +42,9 @@ public class RentedProductController {
 
         RentedProductDto rentedProductDto = rentedProductService.startRent(mapper.map(requestRentedProduct, RentedProductDto.class));
 
-        System.out.println(rentedProductDto);
+        ResponseRentedProduct responseRentedProduct = mapper.map(rentedProductDto, ResponseRentedProduct.class);
 
-        rentedProductProducer.send("rentedproduct", rentedProductDto);
-
-        ResponseRentedProduct returnValue = mapper.map(rentedProductDto, ResponseRentedProduct.class);
-
-//        ResponseRentedProduct responseRentedProduct = mapper.map(rentedProductDto, ResponseRentedProduct.class);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseRentedProduct);
     }
 
     //대여 완료

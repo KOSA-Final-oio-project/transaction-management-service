@@ -6,6 +6,8 @@ import com.oio.transactionservice.jpa.RentedProductEntity;
 import com.oio.transactionservice.jpa.RentedProductRepository;
 import com.oio.transactionservice.jpa.status.ReviewStatus;
 import com.oio.transactionservice.jpa.status.Status;
+import com.oio.transactionservice.messagequeue.RentedProductProducer;
+import com.oio.transactionservice.messagequeue.ReviewProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +21,16 @@ import java.util.List;
 @Slf4j
 public class RentedProductServiceImpl implements RentedProductService {
     RentedProductRepository rentedProductRepository;
-
     private ModelMapper mapper;
+    private RentedProductProducer rentedProductProducer;
+    private ReviewProducer reviewProducer;
 
     @Autowired
-    public RentedProductServiceImpl(RentedProductRepository rentedProductRepository) {
+    public RentedProductServiceImpl(RentedProductRepository rentedProductRepository, RentedProductProducer rentedProductProducer, ReviewProducer reviewProducer) {
         this.rentedProductRepository = rentedProductRepository;
         this.mapper = ModelMapperConfig.modelMapper();
+        this.rentedProductProducer = rentedProductProducer;
+        this.reviewProducer = reviewProducer;
     }
 
     //대여 시작
@@ -42,7 +47,9 @@ public class RentedProductServiceImpl implements RentedProductService {
 
                 RentedProductDto returnRentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
 
-                return returnRentedProductDto;
+                RentedProductDto returnValue = rentedProductProducer.sendKafkaRentedProduct("RENTED_PRODUCT", returnRentedProductDto);
+
+                return returnValue;
             } else {
                 throw new NullPointerException();
             }

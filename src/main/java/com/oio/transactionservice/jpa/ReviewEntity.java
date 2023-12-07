@@ -11,13 +11,13 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 @Table(name = "review")
-@SequenceGenerator(
-        name = "SEQ_GENERATOR",
-        sequenceName = "REVIEW_SEQ",
-        allocationSize = 1
-)
 public class ReviewEntity {
     @Id
+    @SequenceGenerator(
+            name = "SEQ_GENERATOR",
+            sequenceName = "REVIEW_SEQ",
+            allocationSize = 1
+    )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_GENERATOR")
     private Long reviewNo;
 

@@ -1,4 +1,4 @@
-package com.oio.transactionservice.kafka.messagequeue;
+package com.oio.transactionservice.messagequeue;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 @EnableKafka
 @Configuration
-public class KafkaProducerConfig {
+public class RentedProductProducerConfig {
 
     @Bean
     public ProducerFactory<String, String> producerFactory(){

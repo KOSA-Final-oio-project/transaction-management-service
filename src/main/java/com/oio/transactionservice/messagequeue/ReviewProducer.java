@@ -1,4 +1,4 @@
-package com.oio.transactionservice.kafka.messagequeue;
+package com.oio.transactionservice.messagequeue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class KafkaProducer {
+public class ReviewProducer {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
@@ -30,22 +30,6 @@ public class KafkaProducer {
         log.info("Kafka Producer sent data from the Review microservice : " + reviewDto);
 
         return reviewDto;
-    }
-
-    public RentedProductDto sendKafkaRentedProduct(String topic, RentedProductDto rentedProductDto) {
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonInString = "";
-        try {
-            jsonInString = mapper.writeValueAsString(rentedProductDto);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        kafkaTemplate.send(topic, jsonInString);
-
-        log.info("Kafka Producer sent data from the RentedProduct microservice : " + rentedProductDto);
-
-        return rentedProductDto;
     }
 
 }
