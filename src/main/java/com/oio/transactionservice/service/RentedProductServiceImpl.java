@@ -1,13 +1,13 @@
 package com.oio.transactionservice.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.oio.transactionservice.config.ModelMapperConfig;
 import com.oio.transactionservice.dto.RentedProductDto;
 import com.oio.transactionservice.jpa.RentedProductEntity;
 import com.oio.transactionservice.jpa.RentedProductRepository;
 import com.oio.transactionservice.jpa.status.ReviewStatus;
 import com.oio.transactionservice.jpa.status.Status;
-import com.oio.transactionservice.messagequeue.RentedProductProducer;
-import com.oio.transactionservice.messagequeue.ReviewProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +22,14 @@ import java.util.List;
 public class RentedProductServiceImpl implements RentedProductService {
     RentedProductRepository rentedProductRepository;
     private ModelMapper mapper;
-    private RentedProductProducer rentedProductProducer;
-    private ReviewProducer reviewProducer;
+    JavaTimeModule javaTimeModule = new JavaTimeModule();
+    ObjectMapper objectMapper = new ObjectMapper();
+
 
     @Autowired
-    public RentedProductServiceImpl(RentedProductRepository rentedProductRepository, RentedProductProducer rentedProductProducer, ReviewProducer reviewProducer) {
+    public RentedProductServiceImpl(RentedProductRepository rentedProductRepository) {
         this.rentedProductRepository = rentedProductRepository;
         this.mapper = ModelMapperConfig.modelMapper();
-        this.rentedProductProducer = rentedProductProducer;
-        this.reviewProducer = reviewProducer;
     }
 
     //대여 시작
@@ -47,9 +46,7 @@ public class RentedProductServiceImpl implements RentedProductService {
 
                 RentedProductDto returnRentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
 
-                RentedProductDto returnValue = rentedProductProducer.sendKafkaRentedProduct("RENTED_PRODUCT", returnRentedProductDto);
-
-                return returnValue;
+                return returnRentedProductDto;
             } else {
                 throw new NullPointerException();
             }
@@ -68,13 +65,17 @@ public class RentedProductServiceImpl implements RentedProductService {
 
     //대여 완료
     @Override
-    public void updateRentStatus(Long rentedProductNo) throws Exception {
+    public RentedProductDto updateRentStatus(Long rentedProductNo) throws Exception {
         try {
             RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(rentedProductNo);
 
             rentedProductEntity.updateStatus(Status.대여완료);
 
+            RentedProductDto rentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
+
             rentedProductRepository.save(rentedProductEntity);
+
+            return rentedProductDto;
         } catch (NullPointerException nullPointerException) {
             nullPointerException.printStackTrace();
             throw new NullPointerException("대여 완료 예외 발생");

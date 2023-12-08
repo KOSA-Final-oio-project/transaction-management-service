@@ -2,7 +2,6 @@ package com.oio.transactionservice.messagequeue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.oio.transactionservice.dto.RentedProductDto;
 import com.oio.transactionservice.dto.ReviewDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,7 @@ public class ReviewProducer {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public ReviewDto sendKafkaReview(String topic, ReviewDto reviewDto) {
+    public ReviewDto send(String topic, ReviewDto reviewDto) {
         ObjectMapper mapper = new ObjectMapper();
         String jsonInString = "";
         try {
@@ -27,9 +26,10 @@ public class ReviewProducer {
 
         kafkaTemplate.send(topic, jsonInString);
 
-        log.info("Kafka Producer sent data from the Review microservice : " + reviewDto);
+        log.info("Review Producer sent data from the Review microservice : " + reviewDto);
 
         return reviewDto;
     }
+
 
 }

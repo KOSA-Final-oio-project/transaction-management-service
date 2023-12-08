@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 public class ReviewDto {
     private Long rentedProductNo;
 
+    private Long productNo;
+
     private String writerNickname;
 
     private String receiverNickname;

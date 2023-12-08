@@ -2,8 +2,8 @@ package com.oio.transactionservice.messagequeue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.oio.transactionservice.dto.RentedProductDto;
-import com.oio.transactionservice.dto.ReviewDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -16,24 +16,9 @@ public class RentedProductProducer {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public ReviewDto sendKafkaReview(String topic, ReviewDto reviewDto) {
+    public RentedProductDto send(String topic, RentedProductDto rentedProductDto) {
         ObjectMapper mapper = new ObjectMapper();
-        String jsonInString = "";
-        try {
-            jsonInString = mapper.writeValueAsString(reviewDto);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        kafkaTemplate.send(topic, jsonInString);
-
-        log.info("Kafka Producer sent data from the Review microservice : " + reviewDto);
-
-        return reviewDto;
-    }
-
-    public RentedProductDto sendKafkaRentedProduct(String topic, RentedProductDto rentedProductDto) {
-        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         String jsonInString = "";
         try {
             jsonInString = mapper.writeValueAsString(rentedProductDto);
@@ -42,8 +27,9 @@ public class RentedProductProducer {
         }
 
         kafkaTemplate.send(topic, jsonInString);
-
-        log.info("Kafka Producer sent data from the RentedProduct microservice : " + rentedProductDto);
+        System.out.println("JSON" + jsonInString);
+        System.out.println("반환값" + rentedProductDto);
+        log.info("RentedProduct Producer sent data from the RentedProduct microservice : " + rentedProductDto);
 
         return rentedProductDto;
     }

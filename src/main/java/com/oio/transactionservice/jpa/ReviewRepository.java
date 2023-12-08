@@ -17,4 +17,5 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     //받은 리뷰 목록(빌린, 빌려준 리뷰)
     List<ReviewEntity> findReviewEntitiesByReceiverNickname(String nickname);
 
+    List<ReviewEntity> findReviewEntitiesByReceiverNicknameOrWriterNickname(String receiveNickname, String writeNickname);
 }

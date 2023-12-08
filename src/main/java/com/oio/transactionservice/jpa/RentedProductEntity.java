@@ -16,7 +16,7 @@ public class RentedProductEntity {
     @Id
     @SequenceGenerator(
             name = "SEQ_GENERATOR",
-            sequenceName = "RENTEDPRODUCT_SEQ",
+            sequenceName = "RENTED_SEQ",
             allocationSize = 1
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_GENERATOR")

@@ -21,6 +21,9 @@ public class ReviewEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_GENERATOR")
     private Long reviewNo;
 
+//    @Column(nullable = false)
+//    private Long productNo;
+
     @Column(nullable = false)
     private String content;
 

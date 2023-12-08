@@ -11,15 +11,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @RestController
 @RequestMapping("/review")
 public class ReviewController {
     private ReviewService reviewService;
     private ModelMapper mapper;
+    Map map = new HashMap();
+
 
     public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
@@ -28,21 +28,25 @@ public class ReviewController {
 
     //리뷰 작성
     @PostMapping("/{productNo}/{rentedProductNo}")
-    public ResponseEntity<ResponseReview> createReview(@PathVariable("rentedProductNo") Long rentedProductNo, @PathVariable("productNo") Long productNo, @Valid @RequestBody RequestReview requestReview) throws Exception {
+    public ResponseEntity<Map<String, String>> createReview(@PathVariable("rentedProductNo") Long rentedProductNo, @PathVariable("productNo") Long productNo, @Valid @RequestBody RequestReview requestReview) throws Exception {
         requestReview.setRentedProductNo(rentedProductNo);
         requestReview.setProductNo(productNo);
 
-        ReviewDto reviewDto = reviewService.createReview(mapper.map(requestReview, ReviewDto.class));
+        reviewService.createReview(mapper.map(requestReview, ReviewDto.class));
 
-        ResponseReview responseReview = mapper.map(reviewDto, ResponseReview.class);
+        map.put("msg", "success");
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseReview);
+        return ResponseEntity.status(HttpStatus.CREATED).body(map);
     }
 
     //리뷰 삭제
     @DeleteMapping("/{reviewNo}")
-    public void deleteReview(@PathVariable("reviewNo") Long reviewNo) throws Exception {
+    public ResponseEntity<Map<String, String>> deleteReview(@PathVariable("reviewNo") Long reviewNo) throws Exception {
         reviewService.deleteReview(reviewNo);
+
+        map.put("msg", "success");
+
+        return ResponseEntity.status(HttpStatus.OK).body(map);
     }
 
     //상품 번호로 해당 상품 리뷰 전체 조회
@@ -57,7 +61,7 @@ public class ReviewController {
             responseReview.add(review);
         }
 
-        if(responseReview.size() == 0){
+        if (responseReview.size() == 0) {
             throw new NoSuchElementException();
         }
 
@@ -88,8 +92,22 @@ public class ReviewController {
 
     //리뷰 좋아요
     @PutMapping("/{reviewNo}")
-    public void updateHeart(@PathVariable Long reviewNo) throws Exception {
+    public ResponseEntity<Map<String, String>> updateHeart(@PathVariable Long reviewNo) throws Exception {
         reviewService.updateHeart(reviewNo);
+
+        map.put("msg", "success");
+
+        return ResponseEntity.status(HttpStatus.OK).body(map);
+    }
+
+    //내가 받은 하트 전체 조회
+    @GetMapping("/heart")
+    public ResponseEntity<Map<String, Long>> getAllHeart(@RequestParam String nickname) throws Exception {
+        reviewService.getAllHeart(nickname);
+
+        map.put("msg", reviewService.getAllHeart(nickname));
+
+        return ResponseEntity.status(HttpStatus.OK).body(map);
     }
 
 }
