@@ -11,6 +11,8 @@ import com.oio.transactionservice.jpa.status.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -20,15 +22,19 @@ import java.util.List;
 @Service
 @Slf4j
 public class RentedProductServiceImpl implements RentedProductService {
-    RentedProductRepository rentedProductRepository;
+    private RentedProductRepository rentedProductRepository;
+    private CircuitBreakerFactory circuitBreakerFactory;
     private ModelMapper mapper;
+
     JavaTimeModule javaTimeModule = new JavaTimeModule();
     ObjectMapper objectMapper = new ObjectMapper();
 
 
     @Autowired
-    public RentedProductServiceImpl(RentedProductRepository rentedProductRepository) {
+    public RentedProductServiceImpl(RentedProductRepository rentedProductRepository,
+                                    CircuitBreakerFactory circuitBreakerFactory) {
         this.rentedProductRepository = rentedProductRepository;
+        this.circuitBreakerFactory = circuitBreakerFactory;
         this.mapper = ModelMapperConfig.modelMapper();
     }
 
@@ -51,14 +57,13 @@ public class RentedProductServiceImpl implements RentedProductService {
                 throw new NullPointerException();
             }
         } catch (DataIntegrityViolationException dataIntegrityViolationException) {
-            dataIntegrityViolationException.printStackTrace();
+            log.error("DataIntegrityViolationException : " + dataIntegrityViolationException.getMessage());
             throw new DataIntegrityViolationException("대여 시작 SQL 예외 발생");
         } catch (NullPointerException nullPointerException) {
-            nullPointerException.printStackTrace();
+            log.error("NullPointerException : " + nullPointerException.getMessage());
             throw new NullPointerException("대여 시작 Null 예외 발생");
-        }
-        catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("Exception : " + e.getMessage());
             throw new Exception("예외 발생");
         }
     }
@@ -77,10 +82,10 @@ public class RentedProductServiceImpl implements RentedProductService {
 
             return rentedProductDto;
         } catch (NullPointerException nullPointerException) {
-            nullPointerException.printStackTrace();
+            log.error("NullPointerException : " + nullPointerException.getMessage());
             throw new NullPointerException("대여 완료 예외 발생");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Exception : " + e.getMessage());
             throw new Exception("예외 발생");
         }
     }
@@ -105,19 +110,21 @@ public class RentedProductServiceImpl implements RentedProductService {
 
             List<RentedProductDto> returnRentedProductDto = new ArrayList<>();
 
+
             for (RentedProductEntity entity : rentedProductEntity) {
                 RentedProductDto dto = mapper.map(entity, RentedProductDto.class);
                 returnRentedProductDto.add(dto);
             }
+
             return returnRentedProductDto;
         } catch (IllegalArgumentException illegalArgumentException) {
-            illegalArgumentException.printStackTrace();
+            log.error("IllegalArgumentException : " + illegalArgumentException.getMessage());
             throw new IllegalArgumentException("사용자 리뷰 조회 예외 발생");
         } catch (NullPointerException nullPointerException) {
-            nullPointerException.printStackTrace();
+            log.error("NullPointerException : " + nullPointerException.getMessage());
             throw new NullPointerException("사용자 리뷰 조회 예외 발생");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Exception : " + e.getMessage());
             throw new Exception("예외 발생");
         }
     }

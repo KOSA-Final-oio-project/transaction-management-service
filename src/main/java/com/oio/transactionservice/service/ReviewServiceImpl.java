@@ -77,10 +77,10 @@ public class ReviewServiceImpl implements ReviewService {
 
             return returnReviewDto;
         } catch (DataIntegrityViolationException dataIntegrityViolationException) {
-            dataIntegrityViolationException.printStackTrace();
+            log.error("DataIntegrityViolationException : " + dataIntegrityViolationException.getMessage());
             throw new Exception("리뷰 작성 SQL 예외 발생");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Exception : " + e.getMessage());
             throw new Exception("예외 발생");
 
         }
@@ -119,7 +119,7 @@ public class ReviewServiceImpl implements ReviewService {
             nullPointerException.printStackTrace();
             throw new NullPointerException("리뷰 삭제 예외 발생");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Exception : " + e.getMessage());
             throw new Exception("예외 발생");
         }
     }
@@ -138,7 +138,7 @@ public class ReviewServiceImpl implements ReviewService {
             }
             return returnReviewDto;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Exception : " + e.getMessage());
             throw new Exception("예외 발생");
         }
     }
@@ -153,10 +153,10 @@ public class ReviewServiceImpl implements ReviewService {
 
             return returnReviewDto;
         } catch (IllegalArgumentException illegalArgumentException) {
-            illegalArgumentException.printStackTrace();
+            log.error("IllegalArgumentException : " + illegalArgumentException.getMessage());
             throw new IllegalAccessException("리뷰 상세 조회 예외 발생");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Exception : " + e.getMessage());
             throw new Exception("예외 발생");
         }
     }
@@ -187,13 +187,13 @@ public class ReviewServiceImpl implements ReviewService {
             }
             return returnReviewDto;
         } catch (IllegalArgumentException illegalArgumentException) {
-            illegalArgumentException.printStackTrace();
+            log.error("IllegalArgumentException : " + illegalArgumentException.getMessage());
             throw new IllegalArgumentException("사용자 리뷰 조회 예외 발생");
         } catch (NullPointerException nullPointerException) {
-            nullPointerException.printStackTrace();
+            log.error("NullPointerException : " + nullPointerException.getMessage());
             throw new NullPointerException("사용자 리뷰 조회 예외 발생");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Exception : " + e.getMessage());
             throw new Exception("예외 발생");
         }
     }
@@ -214,7 +214,7 @@ public class ReviewServiceImpl implements ReviewService {
             nullPointerException.printStackTrace();
             throw new NullPointerException("리뷰 좋아요 예외 발생");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Exception : " + e.getMessage());
             throw new Exception("예외 발생");
         }
     }
@@ -241,7 +241,7 @@ public class ReviewServiceImpl implements ReviewService {
                 throw new NullPointerException("리뷰 좋아요 수 조회 예외 발생");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Exception : " + e.getMessage());
             throw new Exception("예외 발생");
         }
     }
