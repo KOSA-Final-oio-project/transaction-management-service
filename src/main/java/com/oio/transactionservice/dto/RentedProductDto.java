@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 public class RentedProductDto {
     private Long productNo;
 
-    private Long rentedProductNo;
-
     @NotEmpty(message = "대여 시작 날짜를 설정해주세요.")
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm", timezone="Asia/Seoul")
     private LocalDateTime rentStartDate;

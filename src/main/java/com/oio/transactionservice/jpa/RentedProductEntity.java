@@ -12,13 +12,13 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "rentedProduct")
-@SequenceGenerator(
-        name = "SEQ_GENERATOR",
-        sequenceName = "RENTED_PRODUCT_SEQ",
-        allocationSize = 1
-)
 public class RentedProductEntity {
     @Id
+    @SequenceGenerator(
+            name = "SEQ_GENERATOR",
+            sequenceName = "RENTED_SEQ",
+            allocationSize = 1
+    )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_GENERATOR")
     private Long rentedProductNo;
 

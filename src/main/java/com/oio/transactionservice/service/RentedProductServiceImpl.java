@@ -1,5 +1,7 @@
 package com.oio.transactionservice.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.oio.transactionservice.config.ModelMapperConfig;
 import com.oio.transactionservice.dto.RentedProductDto;
 import com.oio.transactionservice.jpa.RentedProductEntity;
@@ -19,8 +21,10 @@ import java.util.List;
 @Slf4j
 public class RentedProductServiceImpl implements RentedProductService {
     RentedProductRepository rentedProductRepository;
-
     private ModelMapper mapper;
+    JavaTimeModule javaTimeModule = new JavaTimeModule();
+    ObjectMapper objectMapper = new ObjectMapper();
+
 
     @Autowired
     public RentedProductServiceImpl(RentedProductRepository rentedProductRepository) {
@@ -35,14 +39,13 @@ public class RentedProductServiceImpl implements RentedProductService {
             if (rentedProductDto.getProductNo() != null) {
                 rentedProductDto.setReviewStatus(ReviewStatus.없음);
                 rentedProductDto.setStatus(Status.대여중);
-                System.out.println("서비스1");
 
                 RentedProductEntity rentedProductEntity = mapper.map(rentedProductDto, RentedProductEntity.class);
-                System.out.println("서비스2");
+
                 rentedProductRepository.save(rentedProductEntity);
-                System.out.println("서비스3");
+
                 RentedProductDto returnRentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
-                System.out.println("서비스4");
+
                 return returnRentedProductDto;
             } else {
                 throw new NullPointerException();
@@ -62,13 +65,17 @@ public class RentedProductServiceImpl implements RentedProductService {
 
     //대여 완료
     @Override
-    public void updateRentStatus(Long rentedProductNo) throws Exception {
+    public RentedProductDto updateRentStatus(Long rentedProductNo) throws Exception {
         try {
             RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(rentedProductNo);
 
             rentedProductEntity.updateStatus(Status.대여완료);
 
+            RentedProductDto rentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
+
             rentedProductRepository.save(rentedProductEntity);
+
+            return rentedProductDto;
         } catch (NullPointerException nullPointerException) {
             nullPointerException.printStackTrace();
             throw new NullPointerException("대여 완료 예외 발생");

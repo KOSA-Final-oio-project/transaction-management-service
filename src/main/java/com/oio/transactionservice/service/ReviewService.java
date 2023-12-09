@@ -22,4 +22,7 @@ public interface ReviewService {
 
     //리뷰 좋아요
     void updateHeart(Long reviewNo) throws Exception;
+
+    //리뷰 좋아요 수 조회
+    Long getAllHeart(String nickname) throws Exception;
 }

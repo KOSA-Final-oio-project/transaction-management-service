@@ -209,11 +209,37 @@ public class ReviewServiceImpl implements ReviewService {
             } else {
                 reviewEntity.setHeart(0L);
             }
-
             reviewRepository.save(reviewEntity);
         } catch (NullPointerException nullPointerException) {
             nullPointerException.printStackTrace();
             throw new NullPointerException("리뷰 좋아요 예외 발생");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("예외 발생");
+        }
+    }
+
+    //리뷰 좋아요 수 조회
+    @Override
+    public Long getAllHeart(String nickname) throws Exception {
+        try {
+            List<ReviewEntity> reviewEntity = reviewRepository.findReviewEntitiesByReceiverNicknameOrWriterNickname(nickname, nickname);
+
+            List<ReviewDto> returnReviewDto = new ArrayList<>();
+            Long heart = 0L;
+
+            if (!reviewEntity.isEmpty()) {
+                for (ReviewEntity entity : reviewEntity) {
+                    ReviewDto dto = mapper.map(entity, ReviewDto.class);
+                    returnReviewDto.add(dto);
+                    if (dto.getReceiverNickname().equals(nickname)) {
+                        heart += dto.getHeart();
+                    }
+                }
+                return heart;
+            } else {
+                throw new NullPointerException("리뷰 좋아요 수 조회 예외 발생");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("예외 발생");

@@ -7,8 +7,6 @@ import java.time.LocalDateTime;
 
 @Data
 public class RequestRentedProduct {
-    private Long rentedProductNo;
-
     private Long productNo;
 
     private String ownerNickname;
