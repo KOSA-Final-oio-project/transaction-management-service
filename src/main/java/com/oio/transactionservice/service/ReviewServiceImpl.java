@@ -116,7 +116,7 @@ public class ReviewServiceImpl implements ReviewService {
             reviewEntity.getRentedProductEntity().updateReviewStatus(reviewStatus);
             reviewRepository.delete(reviewEntity);
         } catch (NullPointerException nullPointerException) {
-            nullPointerException.printStackTrace();
+            log.error("NullPointerException : " + nullPointerException.getMessage());
             throw new NullPointerException("리뷰 삭제 예외 발생");
         } catch (Exception e) {
             log.error("Exception : " + e.getMessage());
@@ -211,7 +211,7 @@ public class ReviewServiceImpl implements ReviewService {
             }
             reviewRepository.save(reviewEntity);
         } catch (NullPointerException nullPointerException) {
-            nullPointerException.printStackTrace();
+            log.error("NullPointerException : " + nullPointerException.getMessage());
             throw new NullPointerException("리뷰 좋아요 예외 발생");
         } catch (Exception e) {
             log.error("Exception : " + e.getMessage());

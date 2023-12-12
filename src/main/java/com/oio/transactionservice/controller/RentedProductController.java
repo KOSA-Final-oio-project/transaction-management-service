@@ -61,8 +61,8 @@ public class RentedProductController {
 
     //대여 관련 물품 조회(status: 0 = 빌려준, 1 = 빌린)
     @GetMapping("/{status}")
-    public ResponseEntity<List<ResponseRentedProduct>> getRentedProduct(@RequestParam String nickname, @PathVariable Long status) throws Exception {
-        List<RentedProductDto> rentedProductDto = rentedProductService.getRentedProduct(nickname, status);
+    public ResponseEntity<List<ResponseRentedProduct>> getRentedProductList(@RequestParam String nickname, @PathVariable Long status) throws Exception {
+        List<RentedProductDto> rentedProductDto = rentedProductService.getRentedProductList(nickname, status);
 
         List<ResponseRentedProduct> responseRentedProduct = new ArrayList<>();
 
@@ -76,5 +76,15 @@ public class RentedProductController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(responseRentedProduct);
+    }
+
+    //대여 번호로 대여 상세 조회
+    @GetMapping("/detail/{rentedProductNo}")
+    public ResponseEntity<ResponseRentedProduct> getRentedProduct(@PathVariable Long rentedProductNo) throws Exception {
+        RentedProductDto rentedProductDto = rentedProductService.getRentedProduct(rentedProductNo);
+
+        ResponseRentedProduct returnRentedProductDto = mapper.map(rentedProductDto, ResponseRentedProduct.class);
+
+        return ResponseEntity.status(HttpStatus.OK).body(returnRentedProductDto);
     }
 }

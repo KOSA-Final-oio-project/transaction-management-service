@@ -1,7 +1,5 @@
 package com.oio.transactionservice.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.oio.transactionservice.config.ModelMapperConfig;
 import com.oio.transactionservice.dto.RentedProductDto;
 import com.oio.transactionservice.jpa.RentedProductEntity;
@@ -11,8 +9,6 @@ import com.oio.transactionservice.jpa.status.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
-import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -23,18 +19,11 @@ import java.util.List;
 @Slf4j
 public class RentedProductServiceImpl implements RentedProductService {
     private RentedProductRepository rentedProductRepository;
-    private CircuitBreakerFactory circuitBreakerFactory;
     private ModelMapper mapper;
 
-    JavaTimeModule javaTimeModule = new JavaTimeModule();
-    ObjectMapper objectMapper = new ObjectMapper();
-
-
     @Autowired
-    public RentedProductServiceImpl(RentedProductRepository rentedProductRepository,
-                                    CircuitBreakerFactory circuitBreakerFactory) {
+    public RentedProductServiceImpl(RentedProductRepository rentedProductRepository) {
         this.rentedProductRepository = rentedProductRepository;
-        this.circuitBreakerFactory = circuitBreakerFactory;
         this.mapper = ModelMapperConfig.modelMapper();
     }
 
@@ -92,7 +81,7 @@ public class RentedProductServiceImpl implements RentedProductService {
 
     //대여 관련 물품 조회(status: 0 = 빌려준, 1 = 빌린)
     @Override
-    public List<RentedProductDto> getRentedProduct(String nickname, Long status) throws Exception {
+    public List<RentedProductDto> getRentedProductList(String nickname, Long status) throws Exception {
         try {
             List<RentedProductEntity> rentedProductEntity;
 
@@ -119,10 +108,26 @@ public class RentedProductServiceImpl implements RentedProductService {
             return returnRentedProductDto;
         } catch (IllegalArgumentException illegalArgumentException) {
             log.error("IllegalArgumentException : " + illegalArgumentException.getMessage());
-            throw new IllegalArgumentException("사용자 리뷰 조회 예외 발생");
+            throw new IllegalArgumentException("대여 관련 조회 예외 발생");
         } catch (NullPointerException nullPointerException) {
             log.error("NullPointerException : " + nullPointerException.getMessage());
-            throw new NullPointerException("사용자 리뷰 조회 예외 발생");
+            throw new NullPointerException("대여 관련 조회 예외 발생");
+        } catch (Exception e) {
+            log.error("Exception : " + e.getMessage());
+            throw new Exception("예외 발생");
+        }
+    }
+
+    //대여 번호로 대여 상세 조회
+    @Override
+    public RentedProductDto getRentedProduct(Long rentedProductNo) throws Exception {
+        try {
+            RentedProductEntity rentedProductEntity = rentedProductRepository.findByRentedProductNo(rentedProductNo);
+            RentedProductDto rentedProductDto = mapper.map(rentedProductEntity, RentedProductDto.class);
+            return rentedProductDto;
+        } catch (IllegalArgumentException illegalArgumentException) {
+            log.error("IllegalArgumentException : " + illegalArgumentException.getMessage());
+            throw new IllegalArgumentException("사용자 리뷰 조회 예외 발생");
         } catch (Exception e) {
             log.error("Exception : " + e.getMessage());
             throw new Exception("예외 발생");
