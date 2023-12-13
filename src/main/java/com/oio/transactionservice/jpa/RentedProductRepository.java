@@ -13,4 +13,6 @@ public interface RentedProductRepository extends JpaRepository<RentedProductEnti
 
     //물품 번호로 물품 조회
     RentedProductEntity findByRentedProductNo(Long rentedProductNo);
+
+    List<RentedProductEntity> findByProductNo(Long productNo);
 }

@@ -69,7 +69,8 @@ public class ReviewServiceImpl implements ReviewService {
 
             //REVIEW 생성
             reviewEntity.setRentedProductEntity(rentedProductEntity);
-            reviewEntity.setHeart(0L);
+            System.out.println(reviewEntity.getHeart());
+
             reviewRepository.save(reviewEntity);
 
             ReviewDto returnReviewDto = mapper.map(reviewEntity, ReviewDto.class);
@@ -129,13 +130,20 @@ public class ReviewServiceImpl implements ReviewService {
     public List<ReviewDto> getProductReview(Long productNo) throws Exception {
         try {
             List<ReviewEntity> reviewEntity = reviewRepository.findReviewEntitiesByRentedProductEntityProductNo(productNo);
+            List<RentedProductEntity> rentedProductEntity = rentedProductRepository.findByProductNo(productNo);
 
             List<ReviewDto> returnReviewDto = new ArrayList<>();
 
             for (ReviewEntity entity : reviewEntity) {
-                ReviewDto dto = mapper.map(entity, ReviewDto.class);
-                returnReviewDto.add(dto);
+                for (RentedProductEntity rentedProduct : rentedProductEntity) {
+                    if (rentedProduct.getOwnerNickname().equals(entity.getReceiverNickname())) {
+                        ReviewDto dto = mapper.map(entity, ReviewDto.class);
+                        returnReviewDto.add(dto);
+                        break;
+                    }
+                }
             }
+
             return returnReviewDto;
         } catch (Exception e) {
             log.error("Exception : " + e.getMessage());
