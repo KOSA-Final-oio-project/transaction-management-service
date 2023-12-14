@@ -87,6 +87,7 @@ public class ReviewController {
             ResponseReview review = mapper.map(dto, ResponseReview.class);
             responseReview.add(review);
         }
+        System.out.println(responseReview);
         return ResponseEntity.status(HttpStatus.OK).body(responseReview);
     }
 

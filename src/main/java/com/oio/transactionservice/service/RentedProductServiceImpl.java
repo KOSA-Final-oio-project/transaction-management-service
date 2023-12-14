@@ -87,9 +87,9 @@ public class RentedProductServiceImpl implements RentedProductService {
 
             if (status != null) {
                 if (status == 0) {
-                    rentedProductEntity = rentedProductRepository.findRentedProductEntitiesByOwnerNickname(nickname);
+                    rentedProductEntity = rentedProductRepository.findRentedProductEntitiesOrderedByOwnerNickname(nickname);
                 } else if (status == 1) {
-                    rentedProductEntity = rentedProductRepository.findRentedProductEntitiesByBorrowerNickname(nickname);
+                    rentedProductEntity = rentedProductRepository.findRentedProductEntitiesOrderedByBorrowerNickname(nickname);
                 } else {
                     throw new IllegalArgumentException();
                 }

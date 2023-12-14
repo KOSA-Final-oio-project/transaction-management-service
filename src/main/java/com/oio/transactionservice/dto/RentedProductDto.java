@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 
 @Data
 public class RentedProductDto {
+    private Long rentedProductNo;
+
     private Long productNo;
 
     @NotEmpty(message = "대여 시작 날짜를 설정해주세요.")

@@ -191,6 +191,7 @@ public class ReviewServiceImpl implements ReviewService {
 
             for (ReviewEntity entity : reviewEntity) {
                 ReviewDto dto = mapper.map(entity, ReviewDto.class);
+                dto.setRentedProductNo(entity.getRentedProductEntity().getRentedProductNo());
                 returnReviewDto.add(dto);
             }
             return returnReviewDto;
