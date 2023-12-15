@@ -20,7 +20,6 @@ public class ReviewController {
     private ModelMapper mapper;
     Map map = new HashMap();
 
-
     public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
         this.mapper = ModelMapperConfig.modelMapper();
