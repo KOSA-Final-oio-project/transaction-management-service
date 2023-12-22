@@ -38,7 +38,7 @@ public class RentedProductController {
 
         RentedProductDto rentedProductDto = rentedProductService.startRent(mapper.map(requestRentedProduct, RentedProductDto.class));
         if (rentedProductDto != null) {
-//            rentedProductProducer.send("RENTED_PRODUCT", rentedProductDto);
+            rentedProductProducer.send("RENTED_PRODUCT", rentedProductDto);
             map.put("msg", "success");
         } else {
             map.put("msg", "fail");
@@ -51,7 +51,7 @@ public class RentedProductController {
     public ResponseEntity<Map<String, String>> updateRentStatus(@PathVariable("rentedProductNo") Long rentedProductNo) throws Exception {
         RentedProductDto rentedProductDto = rentedProductService.updateRentStatus(rentedProductNo);
         if (rentedProductDto != null) {
-//            rentedProductProducer.send("RENTED_PRODUCT", rentedProductDto);
+            rentedProductProducer.send("RENTED_PRODUCT", rentedProductDto);
             map.put("msg", "success");
         } else {
             map.put("msg", "fail");

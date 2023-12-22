@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 
 @Data
 public class ResponseReview {
+    private Long reviewNo;
+
     private Long rentedProductNo;
 
     private String writerNickname;
